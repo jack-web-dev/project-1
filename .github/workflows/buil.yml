@@ -6,36 +6,37 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    # Step 1: Checkout your code
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Get Date
-        id: get-date
-        run: echo "::set-output name=date::$(/bin/date -u +'%Y%m%d')"
-        shell: bash
+    # Step 2: Cache Buildozer global directory
+    - name: Cache Buildozer global directory
+      uses: actions/cache@v4
+      with:
+        path: ~/.buildozer_global
+        key: buildozer-global-${{ hashFiles('buildozer.spec') }}
 
-      - name: Cache Buildozer global directory
-        uses: actions/cache@v4
-        with:
-          path: ~/.buildozer_global
-          key: buildozer-global-${{ hashFiles('buildozer.spec') }}
+    # Step 3: Cache Buildozer local directory
+    - name: Cache Buildozer local directory
+      uses: actions/cache@v4
+      with:
+        path: .buildozer
+        key: ${{ runner.os }}-${{ hashFiles('buildozer.spec') }}
 
-      - name: Cache Buildozer local directory
-        uses: actions/cache@v4
-        with:
-          path: .buildozer
-          key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
+    # Step 4: Build APK with Buildozer (official Kivy action)
+    - name: Build with Buildozer
+      uses: kivy/buildozer-action@v1
+      id: buildozer
+      with:
+        command: buildozer android debug
+        buildozer_version: stable
 
-      - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
-        with:
-          command: buildozer android debug
-          buildozer_version: stable   # <-- updated here
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: kivy-apk
-          path: ${{ steps.buildozer.outputs.filename }}
+    # Step 5: Upload the APK as an artifact
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: kivy-apk
+        path: ${{ steps.buildozer.outputs.filename }}
