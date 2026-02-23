@@ -6,38 +6,36 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    # used to cache dependencies with a timeout
-    - name: Get Date
-      id: get-date
-      run: echo "::set-output name=date::$(/bin/date -u +'%Y%m%d')"
-      shell: bash
+      - name: Get Date
+        id: get-date
+        run: echo "::set-output name=date::$(/bin/date -u +'%Y%m%d')"
+        shell: bash
 
-    - name: Cache Buildozer global directory
-      uses: actions/cache@v4
-      with:
-        path: ~/.buildozer_global
-        key: buildozer-global-${{ hashFiles('buildozer.spec') }}
+      - name: Cache Buildozer global directory
+        uses: actions/cache@v4
+        with:
+          path: ~/.buildozer_global
+          key: buildozer-global-${{ hashFiles('buildozer.spec') }}
 
-    - name: Cache Buildozer local directory
-      uses: actions/cache@v4
-      with:
-        path: .buildozer
-        key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
+      - name: Cache Buildozer local directory
+        uses: actions/cache@v4
+        with:
+          path: .buildozer
+          key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
 
-    - name: Build with Buildozer
-      uses: ArtemSBulgakov/buildozer-action@v1
-      id: buildozer
-      with:
-        command: buildozer android debug
-        buildozer_version: master
+      - name: Build with Buildozer
+        uses: ArtemSBulgakov/buildozer-action@v1
+        id: buildozer
+        with:
+          command: buildozer android debug
+          buildozer_version: stable   # <-- updated here
 
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: kivy-apk
-        path: ${{ steps.buildozer.outputs.filename }}
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: kivy-apk
+          path: ${{ steps.buildozer.outputs.filename }}
