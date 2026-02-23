@@ -9,27 +9,26 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
-    # Cache dependencies for faster builds
+    # used to cache dependencies with a timeout
     - name: Get Date
       id: get-date
       run: echo "::set-output name=date::$(/bin/date -u +'%Y%m%d')"
       shell: bash
 
     - name: Cache Buildozer global directory
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: ~/.buildozer_global
         key: buildozer-global-${{ hashFiles('buildozer.spec') }}
 
     - name: Cache Buildozer local directory
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: .buildozer
         key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
 
-    # Build APK with Buildozer
     - name: Build with Buildozer
       uses: ArtemSBulgakov/buildozer-action@v1
       id: buildozer
@@ -37,9 +36,8 @@ jobs:
         command: buildozer android debug
         buildozer_version: master
 
-    # Upload APK artifact
     - name: Upload APK
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: kivy-apk
         path: ${{ steps.buildozer.outputs.filename }}
